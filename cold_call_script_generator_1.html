@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fervent Call Ticket Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root{
+    --paper:#F5F2EA;
+    --ticket:#FFFDF8;
+    --ink:#26241F;
+    --blueprint:#1B3A4B;
+    --blueprint-light:#2E5468;
+    --safety:#C2680D;
+    --safety-light:#F3E3CE;
+    --line:#D8D2C2;
+    --green:#3F6B4E;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    background:var(--paper);
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:28px 28px;
+    font-family:'Inter', sans-serif;
+    color:var(--ink);
+    padding:32px 16px 64px;
+  }
+
+  .wrap{
+    max-width:760px;
+    margin:0 auto;
+  }
+
+  .masthead{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:3px solid var(--blueprint);
+    padding-bottom:14px;
+    margin-bottom:24px;
+  }
+  .masthead h1{
+    font-family:'Oswald', sans-serif;
+    font-size:28px;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+    margin:0;
+    color:var(--blueprint);
+  }
+  .masthead .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:var(--safety);
+    background:var(--safety-light);
+    padding:4px 8px;
+    border-radius:3px;
+  }
+
+  .form-card{
+    background:var(--ticket);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:22px 24px;
+    box-shadow:0 2px 0 rgba(27,58,75,0.06);
+    margin-bottom:20px;
+  }
+
+  .field-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    margin-bottom:18px;
+  }
+  @media (max-width:560px){
+    .field-row{grid-template-columns:1fr;}
+  }
+
+  label.field-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:var(--blueprint);
+    display:block;
+    margin-bottom:6px;
+  }
+
+  select, input[type="text"]{
+    width:100%;
+    font-family:'Inter', sans-serif;
+    font-size:15px;
+    padding:10px 12px;
+    border:1.5px solid var(--blueprint);
+    border-radius:4px;
+    background:#fff;
+    color:var(--ink);
+  }
+  select:focus, input[type="text"]:focus{
+    outline:2px solid var(--safety);
+    outline-offset:1px;
+  }
+
+  .themes-block{margin-bottom:6px;}
+  .themes-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px 16px;
+  }
+  @media (max-width:560px){
+    .themes-grid{grid-template-columns:1fr;}
+  }
+  .theme-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:14px;
+    padding:6px 0;
+  }
+  .theme-item input{width:16px;height:16px;accent-color:var(--safety);}
+
+  .local-block{
+    margin-top:16px;
+    padding-top:16px;
+    border-top:1px dashed var(--line);
+  }
+  .local-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:15px;
+    font-weight:600;
+  }
+  .local-item input{width:18px;height:18px;accent-color:var(--safety);}
+
+  .hint{
+    font-size:12px;
+    color:#77715f;
+    margin-top:4px;
+  }
+
+  .generate-btn{
+    width:100%;
+    background:var(--blueprint);
+    color:#fff;
+    border:none;
+    font-family:'Oswald', sans-serif;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    font-size:16px;
+    padding:14px;
+    border-radius:4px;
+    cursor:pointer;
+    margin-top:6px;
+    transition:background 0.15s ease;
+  }
+  .generate-btn:hover{background:var(--blueprint-light);}
+
+  .perf{
+    position:relative;
+    height:0;
+    border-top:2px dashed #B9B19A;
+    margin:28px 0;
+  }
+  .perf::before, .perf::after{
+    content:"";
+    position:absolute;
+    top:-9px;
+    width:18px;height:18px;
+    background:var(--paper);
+    border-radius:50%;
+    border:2px dashed #B9B19A;
+  }
+  .perf::before{left:-27px;}
+  .perf::after{right:-27px;}
+
+  #output{display:none;}
+
+  .ticket{
+    background:var(--ticket);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:0;
+    box-shadow:0 2px 0 rgba(27,58,75,0.06);
+    overflow:hidden;
+  }
+
+  .ticket-head{
+    background:var(--blueprint);
+    color:#fff;
+    padding:14px 22px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+  }
+  .ticket-head .num{color:var(--safety-light);}
+
+  .section{
+    padding:20px 24px;
+    border-bottom:1px solid var(--line);
+  }
+  .section:last-child{border-bottom:none;}
+
+  .section-label{
+    font-family:'Oswald', sans-serif;
+    font-size:13px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--safety);
+    margin:0 0 8px 0;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .section-label .idx{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--blueprint);
+    background:var(--safety-light);
+    padding:2px 6px;
+    border-radius:3px;
+  }
+
+  .section p{
+    margin:0 0 10px 0;
+    line-height:1.55;
+    font-size:15px;
+  }
+  .section p:last-child{margin-bottom:0;}
+  .section ul{margin:0 0 8px 0;padding-left:20px;}
+  .section li{margin-bottom:6px;line-height:1.5;font-size:15px;}
+
+  .copy-btn{
+    background:none;
+    border:1.5px solid var(--blueprint);
+    color:var(--blueprint);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    padding:8px 14px;
+    border-radius:4px;
+    cursor:pointer;
+    margin-top:16px;
+  }
+  .copy-btn:hover{background:var(--blueprint);color:#fff;}
+  .copy-row{padding:16px 24px 22px;display:flex;justify-content:flex-end;gap:10px;}
+  .copy-row.copied .copy-btn{background:var(--green);border-color:var(--green);color:#fff;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <h1>Call Ticket Generator</h1>
+    <span class="tag">Fervent · Outbound</span>
+  </div>
+
+  <div class="form-card">
+    <div class="field-row">
+      <div>
+        <label class="field-label">Lead Name</label>
+        <input type="text" id="leadName" placeholder="e.g. Mike">
+      </div>
+      <div>
+        <label class="field-label">Job Role (from posting)</label>
+        <input type="text" id="jobRole" placeholder="e.g. Senior Bookkeeper">
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div>
+        <label class="field-label">Industry</label>
+        <select id="industry">
+          <option value="trades">Construction/Skilled Trades</option>
+          <option value="chvac">Commercial HVAC</option>
+          <option value="rhvac">Residential HVAC</option>
+          <option value="materials">Construction Materials</option>
+          <option value="pest">Pest Control</option>
+        </select>
+      </div>
+      <div>
+        <label class="field-label">Role Type</label>
+        <select id="role">
+          <option value="bookkeeper">Bookkeeper</option>
+          <option value="accountant">Accountant / Accounting Manager</option>
+          <option value="cfo">Controller / CFO</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="themes-block">
+      <label class="field-label">Job Post Themes (select any that apply)</label>
+      <div class="themes-grid" id="themes">
+        <label class="theme-item"><input type="checkbox" value="jobcosting"><span>Job Costing</span></label>
+        <label class="theme-item"><input type="checkbox" value="wip"><span>WIP Reporting</span></label>
+        <label class="theme-item"><input type="checkbox" value="visibility"><span>Visibility</span></label>
+        <label class="theme-item"><input type="checkbox" value="profitability"><span>Project Profitability</span></label>
+        <label class="theme-item"><input type="checkbox" value="multientity"><span>Multi-Entity</span></label>
+        <label class="theme-item"><input type="checkbox" value="payroll"><span>Payroll</span></label>
+        <label class="theme-item"><input type="checkbox" value="cashflow"><span>Cash Flow Forecasting</span></label>
+      </div>
+    </div>
+
+    <div class="local-block">
+      <label class="local-item">
+        <input type="checkbox" id="isLocal">
+        <span>Local Lead? (Dallas area)</span>
+      </label>
+      <div class="hint">If checked, the meeting ask will offer an in-person visit instead of just a call.</div>
+    </div>
+
+    <button class="generate-btn" onclick="generateScript()">Generate Call Ticket</button>
+  </div>
+
+  <div class="perf"></div>
+
+  <div id="output">
+    <div class="ticket">
+      <div class="ticket-head">
+        <span>Call Ticket <span class="num" id="ticketMeta"></span></span>
+        <span id="ticketDate"></span>
+      </div>
+
+      <div class="section">
+        <p class="section-label"><span class="idx">ALWAYS</span> Tone & Ground Rules</p>
+        <ul>
+          <li>Consultative peer, not a salesperson — you talk to business owners every day, sound like it.</li>
+          <li>Get to the point fast. These people are busy, not sitting around waiting for a call.</li>
+          <li>Ask one question, then stop talking. Let them fill the silence.</li>
+          <li>Never read this like a script out loud — know the shape of it and talk naturally.</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <p class="section-label"><span class="idx">1</span> Opening</p>
+        <p id="openingText"></p>
+      </div>
+
+      <div class="section">
+        <p class="section-label"><span class="idx">2</span> The Pitch (catered to the role)</p>
+        <p id="pitchText"></p>
+      </div>
+
+      <div class="section" id="themeSection">
+        <p class="section-label"><span class="idx">3</span> Job Post Callouts</p>
+        <div id="themeLines"></div>
+      </div>
+
+      <div class="section">
+        <p class="section-label"><span class="idx">4</span> Common Questions & Pushback</p>
+        <ul>
+          <li><strong>"We already have someone doing this."</strong> — "Totally get it — most folks we talk to do. This isn't about replacing anyone, it's usually about giving whoever's in that seat a system that's actually built for job costing, so the numbers hold up. Worth 15 minutes to see if that's a gap here?"</li>
+          <li><strong>"We're not looking to make a change right now."</strong> — "Makes sense, no pressure at all. A lot of people we now work with felt the same way before they called us — mind if I check back in after you've had a chance to see how the search goes?"</li>
+          <li><strong>"Just send me some info."</strong> — "Happy to — I'll send a short one-pager. Since I've got you, can I ask two quick questions so what I send is actually relevant to your setup?"</li>
+          <li><strong>"What does this cost?"</strong> — "It depends on the scope, which is exactly what the 15-minute call is for — I don't want to quote you a number that doesn't fit your business."</li>
+          <li><strong>"We tried a firm like this before and it didn't work."</strong> — "That's really useful to know, actually — what didn't work about it? [listen] That's helpful context, and it's part of why we do things differently."</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <p class="section-label"><span class="idx">5</span> Meeting CTA</p>
+        <p id="ctaText"></p>
+      </div>
+
+      <div class="section">
+        <p class="section-label"><span class="idx">VM</span> Voicemail Script</p>
+        <p id="voicemailText"></p>
+      </div>
+
+      <div class="copy-row" id="copyRow">
+        <button class="copy-btn" onclick="copyScript()">Copy Full Script</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const industryData = {
+  trades:    {
+    label:"Construction/Skilled Trades",
+    opening:"we work almost exclusively with trades businesses, roofing, HVAC, plumbing, MEP, and our founders actually used to invest in businesses just like yours, so they really get the job costing and margin side from the owner's chair.",
+    vmReason:"we work with trades businesses specifically, roofing, HVAC, plumbing, MEP, and our founders came from investing in businesses just like yours"
+  },
+  chvac: {
+    label:"Commercial HVAC",
+    opening:"we do accounting and CFO work specifically for trades businesses, and commercial HVAC's actually a space we know really well, one of our founders helped build one of the largest commercial HVAC platforms in the country before starting Fervent.",
+    vmReason:"we do accounting and CFO work for trades businesses, and commercial HVAC's a space we know really well"
+  },
+  rhvac: {
+    label:"Residential HVAC",
+    opening:"we do accounting and CFO work for home service businesses specifically, helping owners boost profit and valuation.",
+    vmReason:"we do accounting and CFO work for home service businesses, helping owners boost profit and valuation"
+  },
+  materials: {
+    label:"Construction Materials",
+    opening:"we do bookkeeping, accounting, and CFO work, with real background in building products specifically, our founders spent their early careers advising building products companies through M&A.",
+    vmReason:"we do bookkeeping, accounting, and CFO work with real background in building products specifically"
+  },
+  pest: {
+    label:"Pest Control",
+    opening:"we do accounting and fractional CFO work for a small group of clients, including another pest control and crawl space repair business, so this space isn't new to us.",
+    vmReason:"we do accounting and fractional CFO work for a small group of clients, including another pest control and crawl space repair business"
+  }
+};
+
+const roleData = {
+  bookkeeper: {
+    label:"Bookkeeper",
+    pitch:"So honestly, with a bookkeeper hire, what we usually run into is the data entry side is fine, but nobody's built the job costing underneath it — so you still don't really know which jobs are making you money. That's usually the piece we end up fixing."
+  },
+  accountant: {
+    label:"Accountant / Accounting Manager",
+    pitch:"With this kind of hire, it usually comes down to whether they can actually run job costing and WIP correctly, not just get the books closed on time — and that's really the process side of things we step in and handle."
+  },
+  cfo: {
+    label:"Controller / CFO",
+    pitch:"For a controller or CFO-level hire, it's less about the accounting and more about visibility — can they get you numbers early enough to actually make a call on pricing or staffing, instead of just telling you after the job's already done. That's the kind of support we provide on a fractional basis."
+  }
+};
+
+const themeLines = {
+  jobcosting:     "Saw job costing in the post — that's usually the first thing we tighten up for shops like yours.",
+  wip:            "Noticed WIP reporting came up — getting that accurate really starts with the job cost data underneath it, which is where we focus.",
+  visibility:     "Saw visibility mentioned — a lot of it comes down to having the right data feeding the dashboards, not just better dashboards.",
+  profitability:  "Noticed project profitability in the post — most shops know if a job made money after the fact, fewer can spot the pattern while it's happening.",
+  multientity:    "Saw you're running multiple entities — that's a layer of complexity we deal with a lot.",
+  payroll:        "Noticed payroll in the post — for trades that's often certified payroll or prevailing wage, which we handle regularly.",
+  cashflow:       "Saw cash flow forecasting mentioned — for job-based work that really comes down to retainage and payment timing."
+};
+
+function generateScript(){
+  const leadName = document.getElementById('leadName').value.trim() || '[Lead Name]';
+  const jobRole = document.getElementById('jobRole').value.trim() || '[Job Role]';
+  const industryKey = document.getElementById('industry').value;
+  const roleKey = document.getElementById('role').value;
+  const isLocal = document.getElementById('isLocal').checked;
+  const checked = Array.from(document.querySelectorAll('#themes input:checked')).map(el => el.value);
+
+  const ind = industryData[industryKey];
+  const role = roleData[roleKey];
+
+  const opening = `"Hi ${leadName}, this is [Caller Name] with Fervent — did I catch you at a bad time? [pause] No worries, I'll be quick. Saw you're bringing on a ${jobRole} — ${ind.opening}"`;
+  document.getElementById('openingText').textContent = opening;
+  document.getElementById('pitchText').textContent = `"${role.pitch}"`;
+
+  const themeContainer = document.getElementById('themeLines');
+  const themeSection = document.getElementById('themeSection');
+  themeContainer.innerHTML = '';
+  if(checked.length){
+    themeSection.style.display = 'block';
+    const ul = document.createElement('ul');
+    checked.forEach(key => {
+      const li = document.createElement('li');
+      li.innerHTML = `<em>"${themeLines[key]}"</em>`;
+      ul.appendChild(li);
+    });
+    themeContainer.appendChild(ul);
+  } else {
+    themeSection.style.display = 'none';
+  }
+
+  const cta = isLocal
+    ? `"Since we're actually Dallas-based too, our founders would genuinely love to swing by in person rather than just jump on a call — would sometime next week work, or is a quick 15-minute call easier for now?"`
+    : `"Would it make sense to grab 15 minutes — I've got [time option 1] or [time option 2], whichever's easier for you?"`;
+  document.getElementById('ctaText').textContent = cta;
+
+  const themeSnippet = checked.length ? ` ${themeLines[checked[0]]}` : '';
+  const voicemail = `"Hi ${leadName}, this is [Caller Name] with Fervent — sorry I missed you. Saw you're hiring a ${jobRole}, and wanted to reach out because ${ind.vmReason}.${themeSnippet ? ' ' + themeSnippet : ''} No need to call back right away — I'll follow up with a text and an email so you've got my info. You can also reach me directly at [phone number] or [email]. Talk soon."`;
+  document.getElementById('voicemailText').textContent = voicemail;
+
+  const now = new Date();
+  document.getElementById('ticketMeta').textContent = `${ind.label.toUpperCase()} / ${role.label.toUpperCase()}`;
+  document.getElementById('ticketDate').textContent = now.toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'});
+
+  document.getElementById('output').style.display = 'block';
+  document.getElementById('copyRow').classList.remove('copied');
+  document.getElementById('output').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function copyScript(){
+  const leadName = document.getElementById('leadName').value.trim() || '[Lead Name]';
+  const jobRole = document.getElementById('jobRole').value.trim() || '[Job Role]';
+  const industryKey = document.getElementById('industry').value;
+  const roleKey = document.getElementById('role').value;
+  const ind = industryData[industryKey];
+  const role = roleData[roleKey];
+
+  const full = `CALL TICKET — ${ind.label.toUpperCase()} / ${role.label.toUpperCase()}
+LEAD: ${leadName} | ROLE POSTED: ${jobRole}
+
+ALWAYS: Consultative peer tone. Get to the point fast. Ask one question, then stop talking.
+
+1) OPENING
+${document.getElementById('openingText').textContent}
+
+2) THE PITCH
+${document.getElementById('pitchText').textContent}
+
+3) JOB POST CALLOUTS
+${document.getElementById('themeLines').innerText || '(none selected)'}
+
+4) COMMON QUESTIONS
+- "We already have someone doing this." -> Not about replacing anyone, it's about giving them a system built for job costing. Ask for 15 minutes.
+- "We're not looking to make a change." -> No pressure, ask to check back in.
+- "Just send me some info." -> Offer to send a one-pager, ask 2 quick qualifying questions first.
+- "What does this cost?" -> Depends on scope, that's what the 15-min call is for.
+- "We tried a firm like this before." -> Ask what didn't work, listen, connect to how you're different.
+
+5) MEETING CTA
+${document.getElementById('ctaText').textContent}
+
+VOICEMAIL
+${document.getElementById('voicemailText').textContent}`;
+
+  navigator.clipboard.writeText(full).then(() => {
+    document.getElementById('copyRow').classList.add('copied');
+    const btn = document.querySelector('.copy-btn');
+    const original = btn.textContent;
+    btn.textContent = 'Copied ✓';
+    setTimeout(() => { btn.textContent = original; }, 1800);
+  });
+}
+</script>
+</body>
+</html>
